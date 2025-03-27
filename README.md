@@ -3,14 +3,14 @@
 
 <img width="706" alt="sample" src="https://github.com/user-attachments/assets/54fa15e4-c7c6-4175-90e4-4673058babf3" />
 
-<!--
 ## Installation
-`cereal` is availabe via [Homebrew](https://
+`cereal` is availabe via [Homebrew](https://brew.sh). It is not currently in the main homebrew repository, but there is a [PR](https://github.com/Homebrew/homebrew-core/pull/216795) waiting approval for its addition.
 ```
-brew tap actuallytaylor/casks
-brew install --cask cereal
+brew tap actuallytaylor/formulae
+brew update
+brew install cereal-console
 ```
--->
+
 ## Features
 - Connect to serial devices (tty, cu, etc...).
   -  If no device is provided to the command, you will be able to select from a list of connected serial ports.
