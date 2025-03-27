@@ -8,6 +8,8 @@ import ArgumentParser
 import ANSITerminal
 import ORSSerial
 
+public let CEREAL_VERSION = "1.1.0"
+
 @main
 struct cereal: ParsableCommand {
     enum ArgumentError: LocalizedError {
@@ -29,7 +31,10 @@ struct cereal: ParsableCommand {
             }
         }
     }
-        
+    
+    @Flag(help: "Version")
+    var version: Bool = false
+
     @Option(name: .shortAndLong, help: "Path to Serial Device.")
     var device: String?
     
@@ -46,6 +51,11 @@ struct cereal: ParsableCommand {
     var flowControl: [SerialConnection.FlowControl] = []
     
     mutating func run() throws {
+        if version {
+            runVersion()
+            return
+        }
+        
         do {
             if device == nil {
                 let ports = ORSSerialPortManager.shared().availablePorts.map({$0.name})
@@ -93,5 +103,9 @@ struct cereal: ParsableCommand {
                 throw errorCode
             }
         }
+    }
+        
+    func runVersion() {
+        print("cereal", CEREAL_VERSION)
     }
 }
