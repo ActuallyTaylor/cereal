@@ -15,7 +15,7 @@ brew install --cask cereal
   -  If no device is provided to the command, you will be able to select from a list of connected serial ports.
 - Set a baud rate for the serial connection.
   -  If no baud rate is provided, you can select from a set of commonly used baud rates. The default is 9600
-- Receive and dispaly *utf8* data from the serial connection.
+- Receive and display *utf8* data from the serial connection.
 - Keystrokes are captured and sent back to the serial connection.
 - Exit with <kbd>ctrl</kbd> + <kbd>c</kbd>.
 
