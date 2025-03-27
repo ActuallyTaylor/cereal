@@ -1,15 +1,16 @@
 # Cereal 🥣
-`cereal` is a terminal based Serial Console. It was written to replace using `screen` to view serial devices on macOS.
+`cereal` is a terminal based Serial Console. It was written as an alternative to using `screen` when interacting with serial devices.
 
 <img width="706" alt="sample" src="https://github.com/user-attachments/assets/54fa15e4-c7c6-4175-90e4-4673058babf3" />
 
+<!--
 ## Installation
-`cereal` is availabe via [Homebrew](https://brew.sh/).
+`cereal` is availabe via [Homebrew](https://
 ```
 brew tap actuallytaylor/casks
 brew install --cask cereal
 ```
-
+-->
 ## Features
 - Connect to serial devices (tty, cu, etc...).
   -  If no device is provided to the command, you will be able to select from a list of connected serial ports.
