@@ -23,6 +23,35 @@ class SerialConnection: NSObject, @unchecked Sendable {
         }
     }
     
+    enum StopBits: UInt, EnumerableFlag {
+        case one = 1
+        case two = 2
+    }
+    
+    enum Parity: EnumerableFlag {
+        case none
+        case odd
+        case even
+        
+        var orsserialParity: ORSSerialPortParity {
+            switch self {
+            case .none:
+                return .none
+            case .odd:
+                return .odd
+            case .even:
+                return .even
+            }
+        }
+    }
+    
+    enum FlowControl: EnumerableFlag {
+        case rts_cts
+        case dtr_dsr
+        case dcd
+    }
+
+    
     let serialPort: ORSSerialPort
     let standardInputFileHandle = FileHandle.standardInput
 
@@ -31,7 +60,7 @@ class SerialConnection: NSObject, @unchecked Sendable {
     
     var terminateBecauseOfError: Bool = false
     
-    init(device: String, baudRate: Int) throws {
+    init(device: String, baudRate: Int, stopBits: StopBits, parity: Parity, flowControls: [FlowControl]) throws {
         self.device = device
         self.baudRate = baudRate
         
@@ -42,6 +71,12 @@ class SerialConnection: NSObject, @unchecked Sendable {
         super.init()
         self.serialPort.delegate = self
         self.serialPort.baudRate = NSNumber(value: self.baudRate)
+        
+        serialPort.numberOfStopBits = stopBits.rawValue
+        serialPort.parity = parity.orsserialParity
+        serialPort.usesDTRDSRFlowControl = flowControls.contains(.dtr_dsr)
+        serialPort.usesRTSCTSFlowControl = flowControls.contains(.rts_cts)
+        serialPort.usesDCDOutputFlowControl = flowControls.contains(.dcd)
     }
     
     deinit {

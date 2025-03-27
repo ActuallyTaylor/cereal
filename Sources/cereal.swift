@@ -29,12 +29,21 @@ struct cereal: ParsableCommand {
             }
         }
     }
-    
-    @Option(name: .shortAndLong, help: "The serial port to connect too")
+        
+    @Option(name: .shortAndLong, help: "Path to Serial Device.")
     var device: String?
     
-    @Option(name: .shortAndLong, help: "Baud rate to communicate with")
+    @Option(name: .shortAndLong, help: "Buad rate for serial connection")
     var baudRate: Int?
+    
+    @Flag(help: "# of Stop Bits for the serial connection.")
+    var stopBits: SerialConnection.StopBits = .one
+    
+    @Flag(help: "Parity for the serial connection.")
+    var parity: SerialConnection.Parity = .none
+    
+    @Flag(help: "Flow Control options (multiple options allowed)")
+    var flowControl: [SerialConnection.FlowControl] = []
     
     mutating func run() throws {
         do {
@@ -69,7 +78,7 @@ struct cereal: ParsableCommand {
 
             clearScreen()
             
-            let connection = try SerialConnection(device: device, baudRate: baudRate)
+            let connection = try SerialConnection(device: device, baudRate: baudRate, stopBits: stopBits, parity: parity, flowControls: flowControl)
             try connection.start()
             
             RunLoop.main.run()

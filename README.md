@@ -31,6 +31,10 @@ OPTIONS:
   -h, --help              Show help information.
 ```
 
+## TODO
+1. Add keybinds to toggle RTS & DTR pins.
+2. Add a view of the current state of the RTS, DTR, CTS, DSR, and DCD pins.
+
 ## Credits
 - [Swift Argument Parser](https://github.com/apple/swift-argument-parser.git)
 - [ANSITerminal](https://github.com/pakLebah/ANSITerminal.git) 
