@@ -126,18 +126,6 @@ extension SerialConnection: ORSSerialPortDelegate {
         terminate(error: error)
     }
     
-    func serialPort(_ serialPort: ORSSerialPort, requestDidTimeout request: ORSSerialRequest) {
-        print("Request timed out \(request)")
-    }
-    
-    func serialPort(_ serialPort: ORSSerialPort, didReceiveResponse responseData: Data, to request: ORSSerialRequest) {
-        print("Did receive response \(responseData), \(request)")
-    }
-    
-    func serialPort(_ serialPort: ORSSerialPort, didReceivePacket packetData: Data, matching descriptor: ORSSerialPacketDescriptor) {
-        print("Recieved packet \(packetData), descriptor \(descriptor)")
-    }
-    
     func serialPort(_ serialPort: ORSSerialPort, didReceive data: Data) {
         if let string = String(data: data, encoding: .utf8) {
             printString(input: string)
