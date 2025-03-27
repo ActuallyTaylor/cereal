@@ -1,5 +1,6 @@
 # Cereal 🥣
 `cereal` is a terminal based Serial Console. It was written to replace using `screen` to view serial devices on macOS.
+
 <img width="706" alt="sample" src="https://github.com/user-attachments/assets/54fa15e4-c7c6-4175-90e4-4673058babf3" />
 
 ## Installation
