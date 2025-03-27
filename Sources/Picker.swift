@@ -129,6 +129,7 @@ struct Picker<T> where T: CustomStringConvertible, T: Equatable {
         moveLineDown()
         
         // Reset screen
+        cursorOn()
         setDefault()
         writeln()
         clearLine()

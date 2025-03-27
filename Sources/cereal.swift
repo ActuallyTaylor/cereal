@@ -10,9 +10,24 @@ import ORSSerial
 
 @main
 struct cereal: ParsableCommand {
-    enum ArgumentError: Error {
+    enum ArgumentError: LocalizedError {
         case invalidDevice
+        case pickerReturnedNoDevice
+        case pickerReturnedInvalidDevice
         case invalidBaudRate
+        
+        var errorDescription: String? {
+            switch self {
+            case .invalidDevice:
+                return "No serial device specified"
+            case .invalidBaudRate:
+                return "Invalid baud rate specified"
+            case .pickerReturnedNoDevice:
+                return "Internal error: Picker returned no device"
+            case .pickerReturnedInvalidDevice:
+                return "Internal error: Picker returned invalid device"
+            }
+        }
     }
     
     @Option(name: .shortAndLong, help: "The serial port to connect too")
@@ -22,30 +37,52 @@ struct cereal: ParsableCommand {
     var baudRate: Int?
     
     mutating func run() throws {
-        if device == nil {
-            let ports = ORSSerialPortManager.shared().availablePorts.map({$0.name})
-            let picker = Picker(title: "Select a Serial Device", options: ports)
-            guard let deviceName = picker.choose() else { throw ArgumentError.invalidDevice }
-            guard let serialDevice = ORSSerialPortManager.shared().availablePorts.first(where: {$0.name == deviceName}) else { throw ArgumentError.invalidDevice }
-            device = serialDevice.path
-        }
-        
-        if baudRate == nil {
-            let bauds = [300, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200]
-            let picker = Picker(title: "Select Baud Rate", options: bauds, defaultOption: 9600)
-            baudRate = picker.choose()
-        }
-        
-        guard let device else { throw ArgumentError.invalidDevice }
-        guard let baudRate else { throw ArgumentError.invalidBaudRate }
-        
-        clearScreen()
-        
-        let connection = try SerialConnection(device: device, baudRate: baudRate)
-        connection.start()
-        
-        RunLoop.main.run()
+        do {
+            if device == nil {
+                let ports = ORSSerialPortManager.shared().availablePorts.map({$0.name})
+                let picker = Picker(title: "Select a Serial Device", options: ports)
+                guard let deviceName = picker.choose() else { throw ArgumentError.pickerReturnedNoDevice }
+                guard let serialDevice = ORSSerialPortManager.shared().availablePorts.first(where: {$0.name == deviceName}) else { throw ArgumentError.pickerReturnedInvalidDevice }
+                device = serialDevice.path
+            }
+            
+            if baudRate == nil {
+                let bauds = [300, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200]
+                let picker = Picker(title: "Select Baud Rate", options: bauds, defaultOption: 9600)
+                baudRate = picker.choose()
+            }
+            
+            guard let device else { throw ArgumentError.invalidDevice }
+            guard let baudRate else { throw ArgumentError.invalidBaudRate }
+            
+            // Start intercepting ctrl-c so we can exit gracefully.
+            signal(SIGINT, SIG_IGN) // // Make sure the signal does not terminate the application.
+            
+            let sigintSrc = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
+            sigintSrc.setEventHandler {
+                writeln()
+                moveToColumn(0)
+                print("Screen Complete! Have a nice day :)".bold.green)
+                cereal.exit(withError: ExitCode(0))
+            }
+            sigintSrc.resume()
 
-        print("Screen Complete! Have a nice day :)".bold.green)
+            clearScreen()
+            
+            let connection = try SerialConnection(device: device, baudRate: baudRate)
+            try connection.start()
+            
+            RunLoop.main.run()
+        } catch {
+            cursorOn()
+            let errorCode = cereal.exitCode(for: error)
+            if errorCode.isSuccess {
+                print("Screen Complete! Have a nice day :)".bold.green)
+                throw errorCode
+            } else {
+                print("Error:".bold.red, error.localizedDescription)
+                throw errorCode
+            }
+        }
     }
 }

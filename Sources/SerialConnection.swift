@@ -6,10 +6,21 @@
 //
 
 import ORSSerial
+import ArgumentParser
 
 class SerialConnection: NSObject, @unchecked Sendable {
-    enum SerialConnectionError: Error {
-        case failedToOpenSerialPort
+    enum SerialConnectionError: LocalizedError {
+        case failedToOpen
+        case failedToStart
+        
+        var errorDescription: String? {
+            switch self {
+            case .failedToOpen:
+                return "Failed to open serial port"
+            case .failedToStart:
+                return "Failed to start serial port"
+            }
+        }
     }
     
     let serialPort: ORSSerialPort
@@ -17,13 +28,15 @@ class SerialConnection: NSObject, @unchecked Sendable {
 
     var device: String
     var baudRate: Int
-        
+    
+    var terminateBecauseOfError: Bool = false
+    
     init(device: String, baudRate: Int) throws {
         self.device = device
         self.baudRate = baudRate
         
         let tmp = ORSSerialPort(path: device)
-        guard let tmp else { throw SerialConnectionError.failedToOpenSerialPort }
+        guard let tmp else { throw SerialConnectionError.failedToOpen }
         self.serialPort = tmp
         
         super.init()
@@ -32,13 +45,15 @@ class SerialConnection: NSObject, @unchecked Sendable {
     }
     
     deinit {
-        print("Terminating serial connection")
-        terminate()
+        if serialPort.isOpen {
+            terminate()
+        }
     }
     
-    func start() {
+    func start() throws {
+        guard !serialPort.isOpen else { terminate(); throw SerialConnectionError.failedToOpen }
         serialPort.open()
-        print("Connected to \(self.serialPort.name.bold)!")
+        guard serialPort.isOpen else { terminate(); throw SerialConnectionError.failedToOpen }
         
         // Forward input down the serial connection
         setbuf(stdout, nil)
@@ -50,17 +65,18 @@ class SerialConnection: NSObject, @unchecked Sendable {
         }
     }
         
-    func terminate() {
+    func terminate(error: Error? = nil) {
         serialPort.close()
-        print("Disconnected from \(self.serialPort.name.bold)!")
+        if let error {
+            terminateBecauseOfError = true
+            print("Disconnecting from \(self.serialPort.name.bold) because of an error")
+            print("Error".red.bold, error.localizedDescription)
+            cereal.exit(withError: cereal.exitCode(for: error))
+        }
     }
     
     func send(_ data: Data) {
         serialPort.send(data)
-    }
-    
-    func handleInput() {
-        
     }
     
     func printString(input: String) {
@@ -72,8 +88,7 @@ class SerialConnection: NSObject, @unchecked Sendable {
 
 extension SerialConnection: ORSSerialPortDelegate {
     func serialPort(_ serialPort: ORSSerialPort, didEncounterError error: any Error) {
-        // Error encountered Error Domain=NSPOSIXErrorDomain Code=16 "Resource busy" UserInfo={NSFilePath=/dev/cu.usbmodem2103, NSLocalizedDescription=Resource busy}
-        print("Error encountered \(error)")
+        terminate(error: error)
     }
     
     func serialPort(_ serialPort: ORSSerialPort, requestDidTimeout request: ORSSerialRequest) {
