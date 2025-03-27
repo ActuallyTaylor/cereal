@@ -32,7 +32,7 @@ struct cereal: ParsableCommand {
         }
     }
     
-    @Flag(help: "Version")
+    @Flag(name: .shortAndLong, help: "Print version")
     var version: Bool = false
 
     @Option(name: .shortAndLong, help: "Path to Serial Device.")
