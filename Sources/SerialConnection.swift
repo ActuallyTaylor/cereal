@@ -1,6 +1,6 @@
 //
 //  SerialConnection.swift
-//  screen-improved
+//  cereal
 //
 //  Created by Taylor Lineman on 3/26/25.
 //

@@ -81,7 +81,7 @@ struct cereal: ParsableCommand {
             sigintSrc.setEventHandler {
                 writeln()
                 moveToColumn(0)
-                print("Screen Complete! Have a nice day :)".bold.green)
+                print("Cereal Complete! Have a nice day :)".bold.green)
                 cereal.exit(withError: ExitCode(0))
             }
             sigintSrc.resume()
@@ -96,7 +96,7 @@ struct cereal: ParsableCommand {
             cursorOn()
             let errorCode = cereal.exitCode(for: error)
             if errorCode.isSuccess {
-                print("Screen Complete! Have a nice day :)".bold.green)
+                print("Cereal Complete! Have a nice day :)".bold.green)
                 throw errorCode
             } else {
                 print("Error:".bold.red, error.localizedDescription)
