@@ -8,7 +8,7 @@ import ArgumentParser
 import ANSITerminal
 import ORSSerial
 
-public let CEREAL_VERSION = "1.1.0"
+public let CEREAL_VERSION = "1.1.1"
 
 @main
 struct cereal: ParsableCommand {
