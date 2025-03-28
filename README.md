@@ -1,16 +1,16 @@
 # Cereal 🥣
-`cereal` is a terminal based Serial Console. It was written as an alternative to using `screen` when interacting with serial devices.
+`cereal` is a terminal based Serial Console. It was written as an alternative to using `screen` for interacting with serial devices on macOS.
 
 <img width="706" alt="sample" src="https://github.com/user-attachments/assets/54fa15e4-c7c6-4175-90e4-4673058babf3" />
 
-<!--
 ## Installation
-`cereal` is availabe via [Homebrew](https://
+`cereal` is availabe via [Homebrew](https://brew.sh). It is not currently in the main homebrew repository, but there is a [PR](https://github.com/Homebrew/homebrew-core/pull/216795) waiting approval for its addition.
 ```
-brew tap actuallytaylor/casks
-brew install --cask cereal
+brew tap actuallytaylor/formulae
+brew update
+brew install cereal-console
 ```
--->
+
 ## Features
 - Connect to serial devices (tty, cu, etc...).
   -  If no device is provided to the command, you will be able to select from a list of connected serial ports.
@@ -19,16 +19,25 @@ brew install --cask cereal
 - Receive and display *utf8* data from the serial connection.
 - Keystrokes are captured and sent back to the serial connection.
 - Exit with <kbd>ctrl</kbd> + <kbd>c</kbd>.
+- Set Connection Parity.
+- Set flow control options.
+- Set # of stop bits.
 
 ## Command Line Usage
 ```
 $ cereal -h
-USAGE: cereal [--device <device>] [--baud-rate <baud-rate>]
+USAGE: cereal [--version] [--device <device>] [--baud-rate <baud-rate>] [--one] [--two] [--none] [--odd] [--even] [--rts_cts] [--dtr_dsr] [--dcd]
 
 OPTIONS:
-  -d, --device <device>   The serial port to connect too
+  -v, --version           Print version
+  -d, --device <device>   Path to Serial Device.
   -b, --baud-rate <baud-rate>
-                          Baud rate to communicate with
+                          Buad rate for serial connection
+  --one/--two             # of Stop Bits for the serial connection. (default:
+                          --one)
+  --none/--odd/--even     Parity for the serial connection. (default: --none)
+  --rts_cts/--dtr_dsr/--dcd
+                          Flow Control options (multiple options allowed)
   -h, --help              Show help information.
 ```
 
