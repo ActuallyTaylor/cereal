@@ -57,12 +57,14 @@ class SerialConnection: NSObject, @unchecked Sendable {
 
     var device: String
     var baudRate: Int
+    var lineEnding: LineEnding
     
     var terminateBecauseOfError: Bool = false
     
-    init(device: String, baudRate: Int, stopBits: StopBits, parity: Parity, flowControls: [FlowControl]) throws {
+    init(device: String, baudRate: Int, stopBits: StopBits, parity: Parity, flowControls: [FlowControl], lineEnding: LineEnding) throws {
         self.device = device
         self.baudRate = baudRate
+        self.lineEnding = lineEnding
         
         let tmp = ORSSerialPort(path: device)
         guard let tmp else { throw SerialConnectionError.failedToOpen }
@@ -93,7 +95,13 @@ class SerialConnection: NSObject, @unchecked Sendable {
         // Forward input down the serial connection
         setbuf(stdout, nil)
         standardInputFileHandle.readabilityHandler = { [self] (fileHandle: FileHandle)  in
-            let data = fileHandle.availableData
+            var data = fileHandle.availableData
+            
+            // Check if the data is a carriage return character. The available data will be a single byte with a value of 13 (CR) when return / enter is pressed in macOS.
+            if data == LineEnding.cr.data {
+                data = lineEnding.data
+            }
+            
             DispatchQueue.main.async {
                 self.send(data)
             }
