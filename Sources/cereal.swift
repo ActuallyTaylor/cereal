@@ -8,7 +8,7 @@ import ArgumentParser
 import ANSITerminal
 import ORSSerial
 
-public let CEREAL_VERSION = "1.1.1"
+public let CEREAL_VERSION = "1.1.2"
 
 @main
 struct cereal: ParsableCommand {
@@ -60,7 +60,7 @@ struct cereal: ParsableCommand {
             if device == nil {
                 let ports = ORSSerialPortManager.shared().availablePorts.map({$0.name})
                 let picker = Picker(title: "Select a Serial Device", options: ports)
-                guard let deviceName = picker.choose() else { throw ArgumentError.pickerReturnedNoDevice }
+                guard let deviceName = try picker.choose() else { throw ArgumentError.pickerReturnedNoDevice }
                 guard let serialDevice = ORSSerialPortManager.shared().availablePorts.first(where: {$0.name == deviceName}) else { throw ArgumentError.pickerReturnedInvalidDevice }
                 device = serialDevice.path
             }
@@ -68,7 +68,7 @@ struct cereal: ParsableCommand {
             if baudRate == nil {
                 let bauds = [300, 1200, 2400, 4800, 9600, 19200, 38400, 57600, 115200]
                 let picker = Picker(title: "Select Baud Rate", options: bauds, defaultOption: 9600)
-                baudRate = picker.choose()
+                baudRate = try picker.choose()
             }
             
             guard let device else { throw ArgumentError.invalidDevice }
@@ -79,10 +79,7 @@ struct cereal: ParsableCommand {
             
             let sigintSrc = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
             sigintSrc.setEventHandler {
-                writeln()
-                moveToColumn(0)
-                print("Cereal Complete! Have a nice day :)".bold.green)
-                cereal.exit(withError: ExitCode(0))
+                cereal.exitGracefully()
             }
             sigintSrc.resume()
 
@@ -92,16 +89,37 @@ struct cereal: ParsableCommand {
             try connection.start()
             
             RunLoop.main.run()
-        } catch {
-            cursorOn()
-            let errorCode = cereal.exitCode(for: error)
-            if errorCode.isSuccess {
-                print("Cereal Complete! Have a nice day :)".bold.green)
-                throw errorCode
-            } else {
-                print("Error:".bold.red, error.localizedDescription)
-                throw errorCode
+        } catch let error as PickerError {
+            switch error {
+            case .gracefulExit:
+                cereal.exitGracefully()
+            case .noOptions:
+                try exitWithError(error: error)
             }
+        } catch {
+            try exitWithError(error: error)
+        }
+    }
+    
+    static func exitGracefully() {
+        cursorOn()
+        setDefault()
+        writeln()
+        moveToColumn(0)
+        print("Cereal Complete! Have a nice day :)".bold.green)
+        cereal.exit(withError: ExitCode(0))
+    }
+    
+    func exitWithError(error: Error) throws {
+        cursorOn()
+        setDefault()
+        let errorCode = cereal.exitCode(for: error)
+        if errorCode.isSuccess {
+            print("Cereal Complete! Have a nice day :)".bold.green)
+            throw errorCode
+        } else {
+            print("Error:".bold.red, error.localizedDescription)
+            throw errorCode
         }
     }
         

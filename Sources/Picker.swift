@@ -5,13 +5,21 @@
 //  Created by Taylor Lineman on 3/26/25.
 //
 
+import ArgumentParser
 import ANSITerminal
+import Foundation
+
+enum PickerError: LocalizedError {
+    case gracefulExit
+    case noOptions
+}
 
 struct Picker<T> where T: CustomStringConvertible, T: Equatable {
-    enum KeyCodes: Int {
+    enum KeyCodes: UInt8 {
         case upArrow = 65
         case downArrow = 66
         case enter = 13
+        case q = 113
     }
 
     struct PickerOption {
@@ -25,8 +33,8 @@ struct Picker<T> where T: CustomStringConvertible, T: Equatable {
     var options: [T]
     var defaultOption: T? = nil
     
-    func choose() -> T? {
-        guard options.count > 0 else { return nil }
+    func choose() throws -> T? {
+        guard options.count > 0 else { throw PickerError.noOptions }
         
         cursorOff()
         clearScreen()
@@ -71,6 +79,8 @@ struct Picker<T> where T: CustomStringConvertible, T: Equatable {
             } else {
                 write(option.title)
             }
+            
+            
         }
         
         func renderCap(with selection: String? = nil) {
@@ -98,14 +108,15 @@ struct Picker<T> where T: CustomStringConvertible, T: Equatable {
             renderOption(options[oldOption])
             renderOption(options[newOption])
         }
-        
+
         while true {
             clearBuffer()
             
             if keyPressed() {
                 let keyCode = readCode()
-                
+
                 let selectedOption = options.firstIndex(where: { $0.selected })!
+                
                 if keyCode == KeyCodes.upArrow.rawValue {
                     var newSelectedOption = selectedOption.advanced(by: -1)
                     if newSelectedOption < 0 {
@@ -118,6 +129,14 @@ struct Picker<T> where T: CustomStringConvertible, T: Equatable {
                         newSelectedOption = 0
                     }
                     switchSelectedOption(from: selectedOption, to: newSelectedOption)
+                } else if keyCode == KeyCodes.q.rawValue {
+                    // Reset screen
+                    cursorOn()
+                    setDefault()
+                    writeln()
+                    clearLine()
+                    
+                    throw PickerError.gracefulExit
                 } else if keyCode == KeyCodes.enter.rawValue {
                     break
                 }
