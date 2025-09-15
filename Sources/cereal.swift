@@ -8,7 +8,7 @@ import ArgumentParser
 import ANSITerminal
 import ORSSerial
 
-public let CEREAL_VERSION = "1.1.1"
+public let CEREAL_VERSION = "1.1.2"
 
 enum LineEnding: String, EnumerableFlag {
     case cr = "cr"
