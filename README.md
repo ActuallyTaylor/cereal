@@ -26,7 +26,7 @@ brew install cereal-console
 ## Command Line Usage
 ```
 $ cereal -h
-USAGE: cereal [--version] [--device <device>] [--baud-rate <baud-rate>] [--one] [--two] [--none] [--odd] [--even] [--rts_cts] [--dtr_dsr] [--dcd]
+USAGE: cereal [--version] [--device <device>] [--baud-rate <baud-rate>] [--one] [--two] [--none] [--odd] [--even] [--rts_cts] [--dtr_dsr] [--dcd] [--cr] [--lf] [--crlf]
 
 OPTIONS:
   -v, --version           Print version
@@ -38,6 +38,8 @@ OPTIONS:
   --none/--odd/--even     Parity for the serial connection. (default: --none)
   --rts_cts/--dtr_dsr/--dcd
                           Flow Control options (multiple options allowed)
+  --cr/--lf/--crlf        Change which line ending is sent when return / enter
+                          is pressed. (default: --cr)
   -h, --help              Show help information.
 ```
 
