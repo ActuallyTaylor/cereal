@@ -10,7 +10,6 @@ import ANSITerminal
 import Foundation
 
 enum PickerError: LocalizedError {
-    case gracefulExit
     case noOptions
 }
 
@@ -19,7 +18,6 @@ struct Picker<T> where T: CustomStringConvertible, T: Equatable {
         case upArrow = 65
         case downArrow = 66
         case enter = 13
-        case q = 113
     }
 
     struct PickerOption {
@@ -114,7 +112,7 @@ struct Picker<T> where T: CustomStringConvertible, T: Equatable {
             
             if keyPressed() {
                 let keyCode = readCode()
-
+                
                 let selectedOption = options.firstIndex(where: { $0.selected })!
                 
                 if keyCode == KeyCodes.upArrow.rawValue {
@@ -129,14 +127,6 @@ struct Picker<T> where T: CustomStringConvertible, T: Equatable {
                         newSelectedOption = 0
                     }
                     switchSelectedOption(from: selectedOption, to: newSelectedOption)
-                } else if keyCode == KeyCodes.q.rawValue {
-                    // Reset screen
-                    cursorOn()
-                    setDefault()
-                    writeln()
-                    clearLine()
-                    
-                    throw PickerError.gracefulExit
                 } else if keyCode == KeyCodes.enter.rawValue {
                     break
                 }

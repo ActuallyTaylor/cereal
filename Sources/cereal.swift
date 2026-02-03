@@ -60,6 +60,18 @@ struct cereal: ParsableCommand {
         }
         
         do {
+            // Start intercepting ctrl-c so we can exit gracefully.
+            signal(SIGINT, SIG_IGN) // Make sure the signal does not terminate the application.
+            
+            // Using the global queue here lets us break through ANSITerminal and exit gracefully from within pickers.
+            let sigintSrc = DispatchSource.makeSignalSource(signal: SIGINT, queue: .global())
+            sigintSrc.setEventHandler {
+                cereal.exitGracefully()
+            }
+            
+            // Start the source
+            sigintSrc.resume()
+
             if device == nil {
                 let ports = ORSSerialPortManager.shared().availablePorts.map({$0.name})
                 let picker = Picker(title: "Select a Serial Device", options: ports)
@@ -77,15 +89,6 @@ struct cereal: ParsableCommand {
             guard let device else { throw ArgumentError.invalidDevice }
             guard let baudRate else { throw ArgumentError.invalidBaudRate }
             
-            // Start intercepting ctrl-c so we can exit gracefully.
-            signal(SIGINT, SIG_IGN) // // Make sure the signal does not terminate the application.
-            
-            let sigintSrc = DispatchSource.makeSignalSource(signal: SIGINT, queue: .main)
-            sigintSrc.setEventHandler {
-                cereal.exitGracefully()
-            }
-            sigintSrc.resume()
-
             clearScreen()
             
             let connection = try SerialConnection(device: device, baudRate: baudRate, stopBits: stopBits, parity: parity, flowControls: flowControl, lineEnding: lineEnding)
@@ -94,8 +97,6 @@ struct cereal: ParsableCommand {
             RunLoop.main.run()
         } catch let error as PickerError {
             switch error {
-            case .gracefulExit:
-                cereal.exitGracefully()
             case .noOptions:
                 try exitWithError(error: error)
             }
@@ -116,6 +117,9 @@ struct cereal: ParsableCommand {
     func exitWithError(error: Error) throws {
         cursorOn()
         setDefault()
+        writeln()
+        moveToColumn(0)
+
         let errorCode = cereal.exitCode(for: error)
         if errorCode.isSuccess {
             print("Cereal Complete! Have a nice day :)".bold.green)
