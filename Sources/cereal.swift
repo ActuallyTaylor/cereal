@@ -8,7 +8,24 @@ import ArgumentParser
 import ANSITerminal
 import ORSSerial
 
-public let CEREAL_VERSION = "1.1.2"
+public let CEREAL_VERSION = "1.2"
+
+enum LineEnding: String, EnumerableFlag {
+    case cr = "cr"
+    case lf = "lf"
+    case crlf = "crlf"
+    
+    var data: Data {
+        switch self {
+        case .cr:
+            Data(bytes: [13], count: 1)
+        case .lf:
+            Data(bytes: [10], count: 1)
+        case .crlf:
+            Data(bytes: [13, 10], count: 2)
+        }
+    }
+}
 
 @main
 struct cereal: ParsableCommand {
@@ -50,6 +67,9 @@ struct cereal: ParsableCommand {
     @Flag(help: "Flow Control options (multiple options allowed)")
     var flowControl: [SerialConnection.FlowControl] = []
     
+    @Flag(help: "Change which line ending is sent when return / enter is pressed.")
+    var lineEnding: LineEnding = .cr
+
     mutating func run() throws {
         if version {
             runVersion()
@@ -85,7 +105,7 @@ struct cereal: ParsableCommand {
 
             clearScreen()
             
-            let connection = try SerialConnection(device: device, baudRate: baudRate, stopBits: stopBits, parity: parity, flowControls: flowControl)
+            let connection = try SerialConnection(device: device, baudRate: baudRate, stopBits: stopBits, parity: parity, flowControls: flowControl, lineEnding: lineEnding)
             try connection.start()
             
             RunLoop.main.run()
