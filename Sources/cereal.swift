@@ -10,23 +10,6 @@ import ORSSerial
 
 public let CEREAL_VERSION = "1.2"
 
-enum LineEnding: String, EnumerableFlag {
-    case cr = "cr"
-    case lf = "lf"
-    case crlf = "crlf"
-    
-    var data: Data {
-        switch self {
-        case .cr:
-            Data(bytes: [13], count: 1)
-        case .lf:
-            Data(bytes: [10], count: 1)
-        case .crlf:
-            Data(bytes: [13, 10], count: 2)
-        }
-    }
-}
-
 @main
 struct cereal: ParsableCommand {
     enum ArgumentError: LocalizedError {
@@ -55,7 +38,7 @@ struct cereal: ParsableCommand {
     @Option(name: .shortAndLong, help: "Path to Serial Device.")
     var device: String?
     
-    @Option(name: .shortAndLong, help: "Buad rate for serial connection")
+    @Option(name: .shortAndLong, help: "Baud rate for serial connection")
     var baudRate: Int?
     
     @Flag(help: "# of Stop Bits for the serial connection.")
