@@ -5,10 +5,16 @@
 //  Created by Taylor Lineman on 3/26/25.
 //
 
+import ArgumentParser
 import ANSITerminal
+import Foundation
+
+enum PickerError: LocalizedError {
+    case noOptions
+}
 
 struct Picker<T> where T: CustomStringConvertible, T: Equatable {
-    enum KeyCodes: Int {
+    enum KeyCodes: UInt8 {
         case upArrow = 65
         case downArrow = 66
         case enter = 13
@@ -25,8 +31,8 @@ struct Picker<T> where T: CustomStringConvertible, T: Equatable {
     var options: [T]
     var defaultOption: T? = nil
     
-    func choose() -> T? {
-        guard options.count > 0 else { return nil }
+    func choose() throws -> T? {
+        guard options.count > 0 else { throw PickerError.noOptions }
         
         cursorOff()
         clearScreen()
@@ -71,6 +77,8 @@ struct Picker<T> where T: CustomStringConvertible, T: Equatable {
             } else {
                 write(option.title)
             }
+            
+            
         }
         
         func renderCap(with selection: String? = nil) {
@@ -98,7 +106,7 @@ struct Picker<T> where T: CustomStringConvertible, T: Equatable {
             renderOption(options[oldOption])
             renderOption(options[newOption])
         }
-        
+
         while true {
             clearBuffer()
             
@@ -106,6 +114,7 @@ struct Picker<T> where T: CustomStringConvertible, T: Equatable {
                 let keyCode = readCode()
                 
                 let selectedOption = options.firstIndex(where: { $0.selected })!
+                
                 if keyCode == KeyCodes.upArrow.rawValue {
                     var newSelectedOption = selectedOption.advanced(by: -1)
                     if newSelectedOption < 0 {
